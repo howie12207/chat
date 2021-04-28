@@ -58,11 +58,16 @@
         />
       </div>
     </div>
+    <transition name="fade">
+      <loading v-if="loading" />
+    </transition>
   </div>
 </template>
 
 <script>
+import loading from "@/components/loading.vue";
 export default {
+  components: { loading },
   data() {
     return {
       nickname: localStorage.getItem("nickname"),
@@ -71,6 +76,7 @@ export default {
       inputMessage: "",
       id: null,
       count: null,
+      loading: true,
     };
   },
   mounted() {
@@ -106,10 +112,12 @@ export default {
       this.websock.onclose = this.websocketclose;
     },
     websocketonopen() {
+      this.loading = false;
       console.log("已連線");
     },
     websocketonerror() {
       // 连接建立失败重连
+      this.loading = true;
       this.initWebSocket();
     },
     websocketonmessage(e) {
@@ -137,7 +145,18 @@ export default {
 </script>
 
 <style>
-.container {
-  color: #333;
+.fade-enter-active {
+  animation: fade 0.5s ease forwards;
+}
+.fade-leave-active {
+  animation: fade 0.5s ease forwards reverse;
+}
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style>
