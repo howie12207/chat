@@ -1,26 +1,23 @@
 <template>
-  <transition name="fade">
-    <div
-      v-show="test"
-      class="bg-gray-200 min-h-screen w-full flex justify-center items-center flex-col"
-    >
-      <div class="flex flex-col">
-        <div class="mb-2">請輸入您的暱稱</div>
-        <input
-          v-model="nickname"
-          type="text"
-          class="mb-4 py-2 px-4 rounded w-80 focus:outline-none"
-          @keyup.enter="start"
-        />
-        <div
-          class="self-end cursor-pointer ring-2 py-1 px-2 rounded"
-          @click="start"
-        >
-          開始聊天
-        </div>
+  <div
+    class="bg-gray-200 min-h-screen w-full flex justify-center items-center flex-col"
+  >
+    <div class="flex flex-col">
+      <div class="mb-2">請輸入您的暱稱</div>
+      <input
+        v-model="nickname"
+        type="text"
+        class="mb-4 py-2 px-4 rounded w-80 focus:outline-none"
+        @keyup.enter="start"
+      />
+      <div
+        class="self-end cursor-pointer ring-2 py-1 px-2 rounded"
+        @click="start"
+      >
+        開始聊天
       </div>
     </div>
-  </transition>
+  </div>
 </template>
 
 <script>
@@ -28,12 +25,10 @@ export default {
   data() {
     return {
       nickname: "",
-      test: false,
     };
   },
   mounted() {
     this.nickname = sessionStorage.getItem("nickname");
-    this.test = true;
   },
   methods: {
     start() {

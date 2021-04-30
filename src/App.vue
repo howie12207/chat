@@ -1,5 +1,7 @@
 <template>
-  <div id="app">
-    <router-view />
+  <div id="app" class="overflow-hidden max-h-screen">
+    <transition name="fade">
+      <router-view />
+    </transition>
   </div>
 </template>

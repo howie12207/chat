@@ -148,9 +148,6 @@ export default {
     },
     scrollHandle() {
       const el = this.$refs.chatBox;
-      console.log("1", el.offsetHeight);
-      console.log("2", el.scrollTop);
-      console.log("3", el.scrollHeight);
       this.showToBottom =
         el.offsetHeight + Math.ceil(el.scrollTop) - el.scrollHeight >= 0
           ? false
@@ -161,8 +158,8 @@ export default {
     },
     initWebSocket() {
       // const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
-      // const wsPath = `ws://localhost:3001/${this.nickname}`;
-      const wsPath = `ws://220.133.52.164:3001/${this.nickname}`;
+      const wsPath = `ws://localhost:3001/${this.nickname}`;
+      // const wsPath = `wss://220.133.52.164:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
       this.websock.onmessage = this.websocketonmessage;
       this.websock.onopen = this.websocketonopen;
@@ -189,6 +186,9 @@ export default {
         return;
       }
       this.messageList.push(receive);
+      if (!this.showToBottom) {
+        this.scrollToBottom();
+      }
     },
     websocketsend(Data) {
       // 数据发送
