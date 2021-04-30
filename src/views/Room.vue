@@ -3,6 +3,7 @@
     <div
       class="relative text-center overflow-hidden lg:mx-auto lg:max-w-xl lg:rounded-lg"
     >
+      <!-- Header -->
       <section class="h-10 relative">
         <div
           class="absolute py-2 text-base bg-gray-800 text-white w-full flex items-center"
@@ -11,7 +12,9 @@
             ><icon-chevron
           /></router-link>
           <span class="w-4/6">{{ `聊天室 (${count})` }}</span>
-          <span class="w-1/6">123</span>
+          <span class="w-1/6 flex items-center justify-center"
+            ><icon-menu :size="24"
+          /></span>
         </div>
       </section>
       <section
@@ -58,9 +61,10 @@
             </div>
           </div>
         </div>
+        <!-- 置底按鈕 -->
         <transition name="move-up">
           <div
-            v-if="showToBottom"
+            v-show="showToBottom"
             class="absolute bottom-16 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-white cursor-pointer lg:right-8"
             @click="scrollToBottom"
           >
@@ -68,6 +72,17 @@
           </div>
         </transition>
       </section>
+      <!-- 置底留言 -->
+      <transition name="move-up">
+        <p
+          v-show="showLastMessage"
+          class="absolute bottom-10 py-1 px-4 bg-gray-700 bg-opacity-50 w-full text-left"
+          @click="scrollToBottom"
+        >
+          {{ last.nickname }}: {{ last.message }}
+        </p>
+      </transition>
+      <!-- Bottom -->
       <section class="h-10 relative">
         <div class="absolute bottom-0 w-full">
           <input
@@ -97,8 +112,9 @@
 import loading from "@/components/Loading.vue";
 import iconArrow from "@/components/IconArrow.vue";
 import iconChevron from "@/components/IconChevron.vue";
+import iconMenu from "@/components/IconMenu.vue";
 export default {
-  components: { loading, iconArrow, iconChevron },
+  components: { loading, iconArrow, iconChevron, iconMenu },
   data() {
     return {
       nickname: sessionStorage.getItem("nickname"),
@@ -109,6 +125,11 @@ export default {
       count: null,
       loading: true,
       showToBottom: false,
+      showLastMessage: false,
+      last: {
+        nickname: "",
+        message: "",
+      },
     };
   },
   mounted() {
@@ -148,10 +169,12 @@ export default {
     },
     scrollHandle() {
       const el = this.$refs.chatBox;
-      this.showToBottom =
-        el.offsetHeight + Math.ceil(el.scrollTop) - el.scrollHeight >= 0
-          ? false
-          : true;
+      if (el.offsetHeight + Math.ceil(el.scrollTop) - el.scrollHeight >= 0) {
+        this.showToBottom = false;
+        this.showLastMessage = false;
+      } else {
+        this.showToBottom = true;
+      }
     },
     scrollToBottom() {
       this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
@@ -159,7 +182,6 @@ export default {
     initWebSocket() {
       // const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
       const wsPath = `ws://localhost:3001/${this.nickname}`;
-      // const wsPath = `wss://220.133.52.164:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
       this.websock.onmessage = this.websocketonmessage;
       this.websock.onopen = this.websocketonopen;
@@ -188,6 +210,10 @@ export default {
       this.messageList.push(receive);
       if (!this.showToBottom) {
         this.scrollToBottom();
+      } else if (receive?.type === "message" && receive?.id !== this.id) {
+        this.showLastMessage = true;
+        this.last.nickname = receive.nickname;
+        this.last.message = receive.message;
       }
     },
     websocketsend(Data) {
