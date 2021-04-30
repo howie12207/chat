@@ -1,12 +1,17 @@
 <template>
   <div class="break-words bg-red-200">
-    <!-- <div class="text-center overflow-hidden lg:mx-auto lg:rounded-lg"> -->
     <div
-      class="text-center overflow-hidden lg:mx-auto lg:max-w-xl lg:rounded-lg relative"
+      class="relative text-center overflow-hidden lg:mx-auto lg:max-w-xl lg:rounded-lg"
     >
       <section class="h-10 relative">
-        <div class="absolute py-2 text-base bg-gray-800 text-white w-full">
-          {{ `聊天室 (${count})` }}
+        <div
+          class="absolute py-2 text-base bg-gray-800 text-white w-full flex items-center"
+        >
+          <router-link to="/" class="w-1/6 flex items-center justify-center"
+            ><icon-chevron
+          /></router-link>
+          <span class="w-4/6">{{ `聊天室 (${count})` }}</span>
+          <span class="w-1/6">123</span>
         </div>
       </section>
       <section
@@ -91,8 +96,9 @@
 <script>
 import loading from "@/components/Loading.vue";
 import iconArrow from "@/components/IconArrow.vue";
+import iconChevron from "@/components/IconChevron.vue";
 export default {
-  components: { loading, iconArrow },
+  components: { loading, iconArrow, iconChevron },
   data() {
     return {
       nickname: sessionStorage.getItem("nickname"),
@@ -155,7 +161,8 @@ export default {
     },
     initWebSocket() {
       // const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
-      const wsPath = `ws://localhost:3001/${this.nickname}`;
+      // const wsPath = `ws://localhost:3001/${this.nickname}`;
+      const wsPath = `ws://220.133.52.164:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
       this.websock.onmessage = this.websocketonmessage;
       this.websock.onopen = this.websocketonopen;
