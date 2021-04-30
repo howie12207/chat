@@ -1,0 +1,29 @@
+.fade-enter-active {
+  animation: fade 0.5s ease forwards;
+}
+.fade-leave-active {
+  animation: fade 0.5s ease forwards reverse;
+}
+.move-up-enter-active {
+  animation: move-up 0.5s ease forwards;
+}
+.move-up-leave-active {
+  animation: move-up 0.5s ease forwards reverse;
+}
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes move-up {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

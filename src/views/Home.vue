@@ -27,7 +27,7 @@ export default {
     };
   },
   mounted() {
-    this.nickname = localStorage.getItem("nickname");
+    this.nickname = sessionStorage.getItem("nickname");
   },
   methods: {
     start() {
@@ -35,7 +35,7 @@ export default {
       this.$router.push("/room");
     },
     setNickname() {
-      localStorage.setItem("nickname", this.nickname);
+      sessionStorage.setItem("nickname", this.nickname);
     },
   },
 };

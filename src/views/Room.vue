@@ -1,12 +1,17 @@
 <template>
-  <div class="bg-red-100 py-10 min-h-screen break-words">
+  <div class="break-words bg-red-200">
+    <!-- <div class="text-center overflow-hidden lg:mx-auto lg:rounded-lg"> -->
     <div
-      class="mx-auto my-10 w-80 text-center bg-gray-300 rounded overflow-hidden"
+      class="text-center overflow-hidden lg:mx-auto lg:max-w-xl lg:rounded-lg relative"
     >
-      <div class="py-2">{{ `聊天室 (${count})` }}</div>
-      <div
+      <section class="h-10 relative">
+        <div class="absolute py-2 text-base bg-gray-800 text-white w-full">
+          {{ `聊天室 (${count})` }}
+        </div>
+      </section>
+      <section
         ref="chatBox"
-        class="h-80 py-4 px-2 bg-gray-900 overflow-x-hidden text-sm overflow-y-auto"
+        class="chat_box py-4 px-2 bg-gray-900 overflow-x-hidden text-sm overflow-y-auto"
       >
         <div v-for="(msg, index) of messageList" :key="index">
           <p
@@ -21,11 +26,16 @@
             class="my-2 w-4/5 text-left"
           >
             <p class="text-white">{{ msg.nickname }}</p>
-            <p
-              class="text-white p-2 my-1 bg-gray-700 inline-block rounded max-w-full"
-            >
-              {{ msg.message }}
-            </p>
+            <div class="flex">
+              <p
+                class="text-white p-2 my-1 bg-gray-700 inline-block rounded max-w-full"
+              >
+                {{ msg.message }}
+              </p>
+              <p class="text-gray-500 self-end m-1">
+                {{ toTime(msg.createTime) }}
+              </p>
+            </div>
           </div>
           <!-- 自己發言 -->
           <div
@@ -33,30 +43,44 @@
             class="my-2 w-4/5 ml-auto text-right"
           >
             <p class="text-white">{{ msg.nickname }}</p>
-            <p
-              class="text-white p-2 my-1 bg-gray-700 inline-block rounded max-w-full"
-            >
-              {{ msg.message }}
-            </p>
+            <div class="flex justify-end">
+              <p class="text-gray-500 self-end m-1">
+                {{ toTime(msg.createTime) }}
+              </p>
+              <p class="p-2 my-1 bg-green-600 inline-block rounded max-w-full">
+                {{ msg.message }}
+              </p>
+            </div>
           </div>
         </div>
-        <br />
-      </div>
-      <div class="relative">
-        <input
-          v-model="inputMessage"
-          type="text"
-          class="py-2 px-6 w-80 focus:outline-none"
-          @keyup.enter="submit"
-        />
-        <img
-          class="absolute top-5 right-1 cursor-pointer"
-          style="transform: translateY(-50%)"
-          src="./submit.svg"
-          alt=""
-          @click="submit"
-        />
-      </div>
+        <transition name="move-up">
+          <div
+            v-if="showToBottom"
+            class="absolute bottom-16 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-white cursor-pointer lg:right-8"
+            @click="scrollToBottom"
+          >
+            <icon-arrow direction="bottom" :size="16" />
+          </div>
+        </transition>
+      </section>
+      <section class="h-10 relative">
+        <div class="absolute bottom-0 w-full">
+          <input
+            v-model="inputMessage"
+            type="text"
+            class="py-2 pl-4 pr-8 w-full focus:outline-none bg-gray-500"
+            placeholder="輸入訊息"
+            @keyup.enter="submit"
+          />
+          <img
+            class="absolute top-5 right-2 cursor-pointer"
+            style="transform: translateY(-50%)"
+            src="./submit.svg"
+            alt="submit"
+            @click="submit"
+          />
+        </div>
+      </section>
     </div>
     <transition name="fade">
       <loading v-if="loading" />
@@ -65,25 +89,32 @@
 </template>
 
 <script>
-import loading from "@/components/loading.vue";
+import loading from "@/components/Loading.vue";
+import iconArrow from "@/components/IconArrow.vue";
 export default {
-  components: { loading },
+  components: { loading, iconArrow },
   data() {
     return {
-      nickname: localStorage.getItem("nickname"),
+      nickname: sessionStorage.getItem("nickname"),
       websock: null,
       messageList: [],
       inputMessage: "",
       id: null,
       count: null,
       loading: true,
+      showToBottom: false,
     };
   },
   mounted() {
-    // this.connect()
+    if (!this.nickname) {
+      this.$router.replace("/");
+      return;
+    }
     this.initWebSocket();
+    this.$refs.chatBox.addEventListener("scroll", this.scrollHandle);
   },
   beforeDestroy() {
+    this.$refs.chatBox.removeEventListener("scroll", this.scrollHandle);
     this.websock.close();
   },
   methods: {
@@ -99,12 +130,32 @@ export default {
       );
       this.inputMessage = "";
       setTimeout(() => {
-        this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
+        this.scrollToBottom();
       }, 0);
     },
+    toTime(timestamp) {
+      const day = new Date(timestamp);
+      const hh = day.getHours() < 10 ? "0" + day.getHours() : day.getHours();
+      const mm =
+        day.getMinutes() < 10 ? "0" + day.getMinutes() : day.getMinutes();
+      return `${hh}:${mm}`;
+    },
+    scrollHandle() {
+      const el = this.$refs.chatBox;
+      console.log("1", el.offsetHeight);
+      console.log("2", el.scrollTop);
+      console.log("3", el.scrollHeight);
+      this.showToBottom =
+        el.offsetHeight + Math.ceil(el.scrollTop) - el.scrollHeight >= 0
+          ? false
+          : true;
+    },
+    scrollToBottom() {
+      this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
+    },
     initWebSocket() {
-      const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
-      // const wsPath = `ws://localhost:3001/${this.nickname}`;
+      // const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
+      const wsPath = `ws://localhost:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
       this.websock.onmessage = this.websocketonmessage;
       this.websock.onopen = this.websocketonopen;
@@ -145,18 +196,8 @@ export default {
 </script>
 
 <style>
-.fade-enter-active {
-  animation: fade 0.5s ease forwards;
-}
-.fade-leave-active {
-  animation: fade 0.5s ease forwards reverse;
-}
-@keyframes fade {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+.chat_box {
+  min-height: calc(100vh - 5rem);
+  max-height: calc(100vh - 5rem);
 }
 </style>
