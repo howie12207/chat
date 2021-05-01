@@ -24,14 +24,12 @@
 export default {
   data() {
     return {
-      nickname: "",
+      nickname: sessionStorage.getItem("nickname"),
     };
-  },
-  mounted() {
-    this.nickname = sessionStorage.getItem("nickname");
   },
   methods: {
     start() {
+      if (!this.nickname.trim()) return;
       this.setNickname();
       this.$router.push("/room");
     },
