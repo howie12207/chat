@@ -1,25 +1,43 @@
 <template>
-  <div class="break-words bg-red-200">
+  <div :class="[{ dark: darkMode }, 'break-words', 'bg-red-200']">
     <div
       class="relative text-center overflow-hidden lg:mx-auto lg:max-w-xl lg:rounded-lg"
     >
       <!-- Header -->
       <section class="h-10 relative">
         <div
-          class="absolute py-2 text-base bg-gray-800 text-white w-full flex items-center"
+          class="absolute py-2 text-base bg-blue-50 dark:bg-gray-800 dark:text-white w-full flex items-center"
         >
           <router-link to="/" class="w-1/6 flex items-center justify-center"
             ><icon-chevron
           /></router-link>
           <span class="w-4/6">{{ `聊天室 (${count})` }}</span>
           <span class="w-1/6 flex items-center justify-center"
-            ><icon-menu :size="24"
+            ><icon-menu :size="24" @menuHandle="menuHandle"
           /></span>
         </div>
       </section>
+      <!-- 右側Menu -->
+      <transition name="move-left">
+        <section
+          class="absolute right-0 top-10 bg-blue-50 dark:text-white dark:bg-gray-800 rounded-bl"
+          v-show="showMenu"
+        >
+          <ul>
+            <li class="py-2 px-5">
+              <switch-btn
+                left-label="深色"
+                v-model="darkMode"
+                @input="changeMode"
+              />
+            </li>
+          </ul>
+        </section>
+      </transition>
+
       <section
         ref="chatBox"
-        class="chat_box py-4 px-2 bg-gray-900 overflow-x-hidden text-sm overflow-y-auto"
+        class="chat_box py-4 px-2 bg-blue-200 dark:bg-gray-900 overflow-x-hidden text-sm overflow-y-auto"
       >
         <div v-for="(msg, index) of messageList" :key="index">
           <p
@@ -33,10 +51,10 @@
             v-else-if="msg.type === 'message' && msg.id !== id"
             class="my-2 w-4/5 text-left"
           >
-            <p class="text-white">{{ msg.nickname }}</p>
+            <p class="dark:text-white">{{ msg.nickname }}</p>
             <div class="flex">
               <p
-                class="text-white p-2 my-1 bg-gray-700 inline-block rounded max-w-full"
+                class="dark:text-white p-2 my-1 bg-gray-300 dark:bg-gray-700 inline-block rounded max-w-full"
               >
                 {{ msg.message }}
               </p>
@@ -50,12 +68,14 @@
             v-else-if="msg.type === 'message' && msg.id === id"
             class="my-2 w-4/5 ml-auto text-right"
           >
-            <p class="text-white">{{ msg.nickname }}</p>
+            <p class="dark:text-white">{{ msg.nickname }}</p>
             <div class="flex justify-end">
               <p class="text-gray-500 self-end m-1">
                 {{ toTime(msg.createTime) }}
               </p>
-              <p class="p-2 my-1 bg-green-600 inline-block rounded max-w-full">
+              <p
+                class="p-2 my-1 bg-green-300 dark:bg-green-600 inline-block rounded max-w-full"
+              >
                 {{ msg.message }}
               </p>
             </div>
@@ -65,7 +85,7 @@
         <transition name="move-up">
           <div
             v-show="showToBottom"
-            class="absolute bottom-16 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-white cursor-pointer lg:right-8"
+            class="absolute bottom-16 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-400 dark:bg-gray-700 text-white cursor-pointer lg:right-8"
             @click="scrollToBottom"
           >
             <icon-arrow direction="bottom" :size="16" />
@@ -88,7 +108,7 @@
           <input
             v-model="inputMessage"
             type="text"
-            class="py-2 pl-4 pr-8 w-full focus:outline-none bg-gray-500"
+            class="py-2 pl-4 pr-8 w-full focus:outline-none dark:bg-gray-500"
             placeholder="輸入訊息"
             @keyup.enter="submit"
           />
@@ -113,8 +133,10 @@ import loading from "@/components/Loading.vue";
 import iconArrow from "@/components/IconArrow.vue";
 import iconChevron from "@/components/IconChevron.vue";
 import iconMenu from "@/components/IconMenu.vue";
+import switchBtn from "@/components/SwitchBtn.vue";
 export default {
-  components: { loading, iconArrow, iconChevron, iconMenu },
+  name: "ChatRoom",
+  components: { loading, iconArrow, iconChevron, iconMenu, switchBtn },
   data() {
     return {
       nickname: sessionStorage.getItem("nickname"),
@@ -126,6 +148,8 @@ export default {
       loading: true,
       showToBottom: false,
       showLastMessage: false,
+      showMenu: false,
+      darkMode: !(localStorage.getItem("darkMode") === "false"),
       last: {
         nickname: "",
         message: "",
@@ -145,6 +169,12 @@ export default {
     this.websock.close();
   },
   methods: {
+    menuHandle(active) {
+      this.showMenu = active;
+    },
+    changeMode(darkMode) {
+      localStorage.setItem("darkMode", darkMode);
+    },
     submit() {
       if (!this.inputMessage.trim()) return;
       this.websocketsend(
