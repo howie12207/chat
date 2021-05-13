@@ -210,8 +210,10 @@ export default {
       this.$refs.chatBox.scrollTop = this.$refs.chatBox.scrollHeight;
     },
     initWebSocket() {
-      // const wsPath = `wss://secure-brook-34506.herokuapp.com/${this.nickname}`;
-      const wsPath = `ws://localhost:3001/${this.nickname}`;
+      const wsPath =
+        process.env.NODE_ENV === "product"
+          ? `wss://secure-brook-34506.herokuapp.com/${this.nickname}`
+          : `ws://localhost:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
       this.websock.onmessage = this.websocketonmessage;
       this.websock.onopen = this.websocketonopen;

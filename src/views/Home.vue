@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     start() {
-      if (!this.nickname.trim()) return;
+      if (!this.nickname?.trim()) return;
       this.setNickname();
       this.$router.push("/room");
     },
