@@ -211,7 +211,7 @@ export default {
     },
     initWebSocket() {
       const wsPath =
-        process.env.NODE_ENV === "product"
+        process.env.NODE_ENV === "production"
           ? `wss://secure-brook-34506.herokuapp.com/${this.nickname}`
           : `ws://localhost:3001/${this.nickname}`;
       this.websock = new WebSocket(wsPath);
